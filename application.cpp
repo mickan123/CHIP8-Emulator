@@ -12,9 +12,6 @@ application::~application() {
 
 void application::setup() {
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// glfw window creation
 	window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Chip8-Emulator", NULL, NULL);
@@ -33,18 +30,31 @@ void application::setup() {
 	glfwSetFramebufferSizeCallback(window, this->framebufferSizeCallback);
 
 	// glad: load all OpenGL function pointers
+	/*
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		exit(EXIT_FAILURE);
-	}
+	}*/
 }
 
+
 void application::start() {
+	glMatrixMode(GL_PROJECTION);
+
+	
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		glOrtho(0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 100, -100);
+		glMatrixMode(GL_MODELVIEW);
+
+		emulator.render();
+
 		glfwSwapBuffers(window);
 	}
 }

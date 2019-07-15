@@ -2,6 +2,9 @@
 
 #include <string>
 
+const int chip8_width = 64;
+const int chip8_height = 32;
+const int scale = 10;
 
 class chip8 {
 public:
@@ -12,6 +15,9 @@ public:
 
 	// Runs one cycle 
 	void cycle();
+
+	// Renders the window
+	void render();
 
 private:
 	// 0x0000 to 0x01FF Chip 8 Interpreter
@@ -28,7 +34,7 @@ private:
 	unsigned short pc;
 
 	// 64 x 32 graphics display black or white
-	unsigned char graphics[64][32];
+	unsigned char graphics[chip8_width][chip8_height];
 
 	// Two timers that count at 60Hz, when greater than 0
 	// they will count down to 0

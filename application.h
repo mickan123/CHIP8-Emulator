@@ -1,10 +1,10 @@
 #pragma once
 #include "chip8.h"
-#include <glad/glad.h>
+
 #include <GLFW/glfw3.h>
 
-const GLuint SCREEN_WIDTH = 800;
-const GLuint SCREEN_HEIGHT = 600;
+const GLuint SCREEN_WIDTH = 640;
+const GLuint SCREEN_HEIGHT = 320;
 
 class application
 {
@@ -16,7 +16,7 @@ public:
 	void setup();
 
 private:
-	chip8 cpu;
+	chip8 emulator;
 	GLFWwindow* window;
 
 	static void keyCallback(GLFWwindow* window, int key, int scandcode, int action, int mode);
