@@ -5,18 +5,7 @@
 
 
 chip8::chip8() {
-	
 	initialise();
-	for (int i = 0; i < chip8_width; i++) {
-		for (int j = 0; j < chip8_height; j++) {
-			if (i == 0 || j == 0 || i == chip8_width - 1 || j == chip8_height - 1) {
-				graphics[i][j] = 1;
-			}
-			else {
-				graphics[i][j] = 0;
-			}
-		}
-	}
 }
 
 
@@ -108,7 +97,6 @@ void chip8::render() {
 
 // Executes one emulation cycle
 void chip8::cycle() {
-	graphics[10][10] = !graphics[10][10];
 	// Fetch Opcode
 	// Decode Opcode
 	// Execute Opcode
