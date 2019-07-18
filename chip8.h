@@ -3,9 +3,6 @@
 #include <string>
 #include <GLFW\glfw3.h>
 
-const int chip8_width = 64;
-const int chip8_height = 32;
-const int scale = 10;
 
 const unsigned char chip8Fontset[80] =
 {
@@ -54,11 +51,20 @@ public:
 	bool drawFlag = true;
 
 private:
+	// Graphics constants
+	static const int chip8_width = 64;
+	static const int chip8_height = 32;
+	static const int scale = 10;
+
+	// Memory constants
+	static const int memorySize = 4096;
+	static const int memoryOffset = 512;
+
 	// 0x0000 to 0x01FF Chip 8 Interpreter
 	// 0x0200 to 0x0E9F Program RAM
 	// 0x0EA0 to 0x0EFF Call stack, internal use and other variables
 	// 0x0F00 to 0x0FFF Display Refresh
-	unsigned char memory[4096];
+	unsigned char memory[memorySize];
 
 	// 16 Registers V0 to VE, 16th register is used for carry flag
 	unsigned char registers[16];

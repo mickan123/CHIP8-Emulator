@@ -35,33 +35,29 @@ void application::setup() {
 
 void application::start() {
 	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, -1);
 
 	GLfloat deltaTime = 0.0f;
-	GLfloat lastFrame = 0.0f;
-	GLfloat refreshRate = 1.0f / 60.0f; // 60 Hz refresh rate
-
+	GLfloat lastFrame = 0.0f;	
+	
 	while (!glfwWindowShouldClose(window)) {
 
+		// Get time since last frame
 		GLfloat currentFrame = glfwGetTime();
-		std::cout << currentFrame << std::endl;
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
+		// If running faster than refresh rate then sleep to make up difference
 		if (deltaTime < refreshRate)
 		{
 			int sleepTime = (refreshRate - deltaTime) * 1000;
 			std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
 		}
 
-
 		glfwPollEvents();
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		glOrtho(0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 100, -100);
-		glMatrixMode(GL_MODELVIEW);
 
 		// Emulate one cycle
 		emulator.cycle();
@@ -71,6 +67,7 @@ void application::start() {
 			emulator.render();
 		}
 
+		// Update keys pressed
 		emulator.setKeys(window);
 
 		glfwSwapBuffers(window);
