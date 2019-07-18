@@ -1,6 +1,7 @@
 #include "chip8.h"
 
 #include <GLFW\glfw3.h>
+#include <iostream>
 
 
 chip8::chip8() {
@@ -17,13 +18,45 @@ chip8::chip8() {
 }
 
 
+void chip8::initialise() {
+	// Initialise registers and memory
+	pc = 0x200;
+	opcode = 0;
+	I = 0;
+	sp = 0;
+
+	// Clear display
+	// Clear stack
+	// Clear registers V0-VF
+	// Clear memory
+
+	// Load fontset
+	for (int i = 0; i < 80; ++i)
+		memory[i] = chip8Fontset[i];
+
+	// Reset timers
+}
 
 void chip8::loadGame(std::string game) {
 
+	// fopen in binary mode 
+	/*
+	for (int i = 0; i < bufferSize; ++i)
+		memory[i + 512] = buffer[i];*/
 }
 
 void chip8::cycle() {
+	// Fetch Opcode
+	// Decode Opcode
+	// Execute Opcode
 
+	// Update timers
+}
+
+void chip8::setKeys(GLFWwindow* window) {
+	for (int i = 0; i < 16; i++) {
+		key[i] = glfwGetKey(window, glfwKeys[i]);
+	}
 }
 
 void chip8::render() {

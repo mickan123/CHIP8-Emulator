@@ -1,6 +1,8 @@
 #include "application.h"
 
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 application::application() {
 	setup();
@@ -28,22 +30,30 @@ void application::setup() {
 	glfwMakeContextCurrent(window);
 	glfwSetKeyCallback(window, this->keyCallback);
 	glfwSetFramebufferSizeCallback(window, this->framebufferSizeCallback);
-
-	// glad: load all OpenGL function pointers
-	/*
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
-		exit(EXIT_FAILURE);
-	}*/
 }
 
 
 void application::start() {
 	glMatrixMode(GL_PROJECTION);
 
-	
+	GLfloat deltaTime = 0.0f;
+	GLfloat lastFrame = 0.0f;
+	GLfloat refreshRate = 1.0f / 60.0f; // 60 Hz refresh rate
+
 	while (!glfwWindowShouldClose(window)) {
+
+		GLfloat currentFrame = glfwGetTime();
+		std::cout << currentFrame << std::endl;
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		if (deltaTime < refreshRate)
+		{
+			int sleepTime = (refreshRate - deltaTime) * 1000;
+			std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
+		}
+
+
 		glfwPollEvents();
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -53,7 +63,15 @@ void application::start() {
 		glOrtho(0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 100, -100);
 		glMatrixMode(GL_MODELVIEW);
 
-		emulator.render();
+		// Emulate one cycle
+		emulator.cycle();
+
+		// Draw if flag is set
+		if (emulator.drawFlag) {
+			emulator.render();
+		}
+
+		emulator.setKeys(window);
 
 		glfwSwapBuffers(window);
 	}
@@ -64,6 +82,7 @@ void application::keyCallback(GLFWwindow* window, int key, int scandcode, int ac
 		glfwSetWindowShouldClose(window, true);
 	}
 }
+
 
 void application::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
