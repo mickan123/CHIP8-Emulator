@@ -90,4 +90,13 @@ private:
 
 	// 35 possible opcodes
 	unsigned short opcode;
+
+	// Instruction decode/execute functions
+	void zeroInstruction();
+	void eightInstruction();
+	void eInstruction();
+	void fInstruction();
+	void invalidInstruction();
+
+	void clearDisplay();
 };
