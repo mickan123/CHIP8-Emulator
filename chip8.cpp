@@ -85,9 +85,8 @@ void chip8::setKeys(GLFWwindow* window) {
 void chip8::render() {
 	glPointSize(scale); // Draw a larger point because we don't want a 64x32 screen
 	int offset = scale / 2; // Add offset because we want to index top left of point
-
-							// Set colour to black
-	glColor3f(1, 1, 1);
+				
+	glColor3f(1, 1, 1); // Set colour to black
 
 	for (int i = 0; i < chip8_width; i++) {
 		for (int j = 0; j < chip8_height; j++) {
@@ -160,19 +159,23 @@ void chip8::cycle() {
 		int height = opcode & 0x000F;
 		int pixel;
 
-		for (int j = registers[Y]; j < registers[Y] + height; j++) {
+		registers[F] = 0;
 
-			pixel = memory[I + j];
+		for (int y = 0; y < height; y++) {
+			pixel = memory[I + y];
 
-			for (int i = registers[X]; i < 8; i++) {
-				if ((pixel & (0x80 >> i)) != 0) {
-					if (graphics[i][j] == 1) {
+			for (int x = 0; x < 8; x++) {
+
+				if ((pixel & (0x80 >> x)) != 0) {
+					
+					if (graphics[x + registers[X]][y + registers[Y]] == 1) {
 						registers[F] = 1;
 					}
-					graphics[i][j] ^= 1;
+					graphics[x + registers[X]][y + registers[Y]] ^= 1;
 				}
 			}
 		}
+
 		pc += 2;
 		drawFlag = true;
 		break;
