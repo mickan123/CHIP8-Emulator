@@ -52,6 +52,7 @@ void chip8::clearDisplay() {
 			graphics[i][j] = 0;
 		}
 	}
+	drawFlag = true;
 }
 
 // Reads binary rom from input string file path
@@ -103,8 +104,8 @@ void chip8::render() {
 void chip8::cycle() {
 	// Fetch Opcode
 	opcode = memory[pc] << 8 | memory[pc + 1];
-	int X = (opcode & 0x0F00) >> 16;
-	int Y = (opcode & 0x00F0) >> 8;
+	int X = (opcode & 0x0F00) >> 8;
+	int Y = (opcode & 0x00F0) >> 4;
 	int F = 0xF;
 
 	// Decode/Execute Opcode
@@ -156,16 +157,24 @@ void chip8::cycle() {
 		break;
 	case(0xD000):
 	{
-		// TODO
-		int N = opcode & 0x000F;
-		registers[F] = 0;
-		for (int i = registers[X]; i < 8; i++) {
-			for (int j = registers[Y]; j < registers[Y] + N; j++) {
-				registers[F] = registers[F] || !graphics[i][j];
-				graphics[i][j] = 1;
+		int height = opcode & 0x000F;
+		int pixel;
+
+		for (int j = registers[Y]; j < registers[Y] + height; j++) {
+
+			pixel = memory[I + j];
+
+			for (int i = registers[X]; i < 8; i++) {
+				if ((pixel & (0x80 >> i)) != 0) {
+					if (graphics[i][j] == 1) {
+						registers[F] = 1;
+					}
+					graphics[i][j] ^= 1;
+				}
 			}
 		}
 		pc += 2;
+		drawFlag = true;
 		break;
 	}
 	case(0xE000):
@@ -200,7 +209,7 @@ void chip8::zeroInstruction() {
 		pc += 2;
 		break;
 	default:
-		// TODO: Calls RCA 1802 program at address NNN. Not necessary for most ROMs.
+		invalidInstruction();
 		break;
 	}
 	pc += 2;
@@ -208,8 +217,8 @@ void chip8::zeroInstruction() {
 
 // Decodes/exectutes instructions that have an 0x8 most significant byte
 void chip8::eightInstruction() {
-	int X = (opcode & 0x0F00) >> 16;
-	int Y = (opcode & 0x00F0) >> 8;
+	int X = (opcode & 0x0F00) >> 8;
+	int Y = (opcode & 0x00F0) >> 4;
 	int F = 0xF;
 
 	switch (opcode & 0x000F) {
@@ -242,7 +251,7 @@ void chip8::eightInstruction() {
 		registers[X] = registers[Y] - registers[X];
 		break;
 	case(0x000E):
-		registers[F] = registers[X] & 0x80;
+		registers[F] = (registers[X] & 0x80) >> 7;
 		registers[X] <<= 1;
 		break;
 	default:
@@ -254,7 +263,7 @@ void chip8::eightInstruction() {
 
 // Decodes/exectutes instructions that have an 0xE most significant byte
 void chip8::eInstruction() {
-	int X = (opcode & 0x0F00) >> 16;
+	int X = (opcode & 0x0F00) >> 8;
 
 	switch (opcode & 0x00FF) {
 	case(0x009E):
@@ -271,15 +280,28 @@ void chip8::eInstruction() {
 
 // Decodes/exectutes instructions that have an 0xF most significant byte
 void chip8::fInstruction() {
-	int X = (opcode & 0x0F00) >> 16;
+	int X = (opcode & 0x0F00) >> 8;
 
 	switch (opcode & 0x00FF) {
 	case(0x0007):
 		registers[X] = delayTimer;
 		break;
 	case(0x000A):
-		// TODO: Wait for key input then store in Vx
+	{
+		bool keyPress = false;
+		
+		for (int i = 0; i < 16; i++) {
+			if (key[i]) {
+				registers[X] = i;
+				keyPress = true;
+			}
+		}
+
+		if (!keyPress) {
+			return;
+		}
 		break;
+	}
 	case(0x0015):
 		delayTimer = registers[X];
 		break;
@@ -290,10 +312,12 @@ void chip8::fInstruction() {
 		I += registers[X];
 		break;
 	case(0x0029):
-		// TODO: Set sprite address
+		I = registers[X] * 0x5;
 		break;
 	case(0x0033):
-		// TODO: BCD stuff
+		memory[I] =      registers[X] / 100;
+		memory[I + 1] = (registers[X] / 10) % 10;
+		memory[I + 2] = (registers[X] % 100) % 10;
 		break;
 	case(0x0055):
 		for (int i = 0; i < 16; i++) {
@@ -309,6 +333,7 @@ void chip8::fInstruction() {
 		invalidInstruction();
 		break;
 	}
+	pc += 2;
 }
 
 void chip8::invalidInstruction() {

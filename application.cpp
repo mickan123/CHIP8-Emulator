@@ -55,16 +55,12 @@ void application::start() {
 			std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
 		}
 
-		glfwPollEvents();
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		// Emulate one cycle
 		emulator.cycle();
 
 		// Draw if flag is set
 		if (emulator.drawFlag) {
-			emulator.render();
+			display();
 		}
 
 		// Update keys pressed
@@ -72,6 +68,14 @@ void application::start() {
 
 		glfwSwapBuffers(window);
 	}
+}
+
+void application::display() {
+	glfwPollEvents();
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	emulator.render();
+	emulator.drawFlag = false;
 }
 
 void application::keyCallback(GLFWwindow* window, int key, int scandcode, int action, int mode) {

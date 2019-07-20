@@ -14,6 +14,7 @@ public:
 
 	void start();
 	void setup();
+	void display();
 
 private:
 	chip8 emulator;

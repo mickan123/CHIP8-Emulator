@@ -48,7 +48,7 @@ public:
 	// Store key press state in emulator
 	void setKeys(GLFWwindow* window);
 
-	bool drawFlag = true;
+	bool drawFlag = false;
 
 private:
 	// Graphics constants
