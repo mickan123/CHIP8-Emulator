@@ -42,7 +42,7 @@ void chip8::initialise() {
 	soundTimer = 0;
 
 	// Load binary
-	loadGame("C:/Users/user/Documents/Projects/CHIP8-Emulator/roms/Brix [Andreas Gustafsson, 1990].ch8");
+	loadGame("C:/Users/user/Documents/Projects/CHIP8-Emulator/roms/Breakout [Carmelo Cortez, 1979].ch8");
 }
 
 // Clears display by zeroing all values
@@ -61,17 +61,18 @@ void chip8::loadGame(std::string game) {
 
 	const int bufferSize = memorySize - memoryOffset;
 	char buffer[bufferSize];
+	size_t n;
 	if (source)
 	{
-		fread(buffer, bufferSize, 1, source);
+		n = fread(buffer, sizeof(unsigned char), bufferSize, source);
 	}
 	else
 	{
 		std::cout << "Error opening file" << std::endl;
 	}
-	for (int i = 0; i < bufferSize; i++) {
+	for (int i = 0; i < n; i++) {
 		memory[i + memoryOffset] = buffer[i];
-	}
+	} 
 }
 
 // Use GLFW functions get key states
@@ -299,7 +300,6 @@ void chip8::fInstruction() {
 				keyPress = true;
 			}
 		}
-
 		if (!keyPress) {
 			return;
 		}

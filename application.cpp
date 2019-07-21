@@ -66,12 +66,12 @@ void application::start() {
 		// Update keys pressed
 		emulator.setKeys(window);
 
+		glfwPollEvents();
 		glfwSwapBuffers(window);
 	}
 }
 
 void application::display() {
-	glfwPollEvents();
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	emulator.render();
@@ -79,7 +79,9 @@ void application::display() {
 }
 
 void application::keyCallback(GLFWwindow* window, int key, int scandcode, int action, int mode) {
+	std::cout << "Callback" << std::endl;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+		std::cout << "HERE" << std::endl;
 		glfwSetWindowShouldClose(window, true);
 	}
 }
