@@ -210,7 +210,6 @@ void chip8::zeroInstruction() {
 	case(0x00EE):
 		sp--;
 		pc = stack[sp];
-		pc += 2;
 		break;
 	default:
 		invalidInstruction();
