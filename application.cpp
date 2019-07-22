@@ -79,9 +79,7 @@ void application::display() {
 }
 
 void application::keyCallback(GLFWwindow* window, int key, int scandcode, int action, int mode) {
-	std::cout << "Callback" << std::endl;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		std::cout << "HERE" << std::endl;
 		glfwSetWindowShouldClose(window, true);
 	}
 }
