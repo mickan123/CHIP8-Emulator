@@ -23,5 +23,5 @@ private:
 	static void keyCallback(GLFWwindow* window, int key, int scandcode, int action, int mode);
 	static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
-	const GLfloat refreshRate = 1.0f / 60.0f; // 60 Hz refresh rate
+	const GLfloat refreshRate = 1.0f / 200.0; // 60 Hz refresh rate
 };

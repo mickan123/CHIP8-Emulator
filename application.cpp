@@ -61,6 +61,7 @@ void application::start() {
 		// Draw if flag is set
 		if (emulator.drawFlag) {
 			display();
+			emulator.drawFlag = true;
 		}
 
 		// Update keys pressed

@@ -79,6 +79,9 @@ void chip8::loadGame(std::string game) {
 void chip8::setKeys(GLFWwindow* window) {
 	for (int i = 0; i < 16; i++) {
 		key[i] = glfwGetKey(window, glfwKeys[i]);
+		if (key[i]) {
+			//std::cout << "HERE";
+		}
 	}
 }
 
@@ -104,9 +107,9 @@ void chip8::render() {
 void chip8::cycle() {
 	// Fetch Opcode
 	opcode = memory[pc] << 8 | memory[pc + 1];
-	int X = (opcode & 0x0F00) >> 8;
-	int Y = (opcode & 0x00F0) >> 4;
-	int F = 0xF;
+	unsigned short X = (opcode & 0x0F00) >> 8;
+	unsigned short Y = (opcode & 0x00F0) >> 4;
+	unsigned short F = 0xF;
 
 	// Decode/Execute Opcode
 	switch (opcode & 0xF000) {
@@ -122,13 +125,28 @@ void chip8::cycle() {
 		pc = (opcode & 0x0FFF);
 		break;
 	case(0x3000):
-		pc += (registers[X] == (opcode & 0x00FF)) ? 4 : 2;
+		if (registers[X] == (opcode & 0x00FF)) {
+			pc += 4;
+		}
+		else {
+			pc += 2;
+		}
 		break;
 	case(0x4000):
-		pc += (registers[X] != (opcode & 0x00FF)) ? 4 : 2;
+		if (registers[X] != (opcode & 0x00FF)) {
+			pc += 4;
+		}
+		else {
+			pc += 2;
+		}
 		break;
 	case(0x5000):
-		pc += (registers[X] == registers[Y]) ? 4 : 2;
+		if (registers[X] == registers[Y]) {
+			pc += 4;
+		}
+		else {
+			pc += 2;
+		}
 		break;
 	case(0x6000):
 		registers[X] = (opcode & 0x00FF);
@@ -142,7 +160,12 @@ void chip8::cycle() {
 		eightInstruction();
 		break;
 	case(0x9000):
-		pc += (registers[X] != registers[Y]) ? 4 : 2;
+		if (registers[X] != registers[Y]) {
+			pc += 4;
+		}
+		else {
+			pc += 2;
+		}
 		break;
 	case(0xA000):
 		I = opcode & 0x0FFF;
@@ -152,13 +175,13 @@ void chip8::cycle() {
 		pc = (opcode & 0x0FFF) + registers[0];
 		break;
 	case(0xC000):
-		registers[X] = (opcode & 0x00FF) & (rand() % 256 - 1);
+		registers[X] = (opcode & 0x00FF) & (rand() % 256);
 		pc += 2;
 		break;
 	case(0xD000):
 	{
 		int height = opcode & 0x000F;
-		int pixel;
+		unsigned short pixel;
 
 		registers[F] = 0;
 
@@ -169,10 +192,12 @@ void chip8::cycle() {
 
 				if ((pixel & (0x80 >> x)) != 0) {
 					
-					if (graphics[x + registers[X]][y + registers[Y]] == 1) {
+					int graphX = (x + registers[X]) % chip8_width;
+					int graphY = (y + registers[Y]) % chip8_height;
+					if (graphics[graphX][graphY] == 1) {
 						registers[F] = 1;
 					}
-					graphics[x + registers[X]][y + registers[Y]] ^= 1;
+					graphics[graphX][graphY] ^= 1;
 				}
 			}
 		}
@@ -220,60 +245,94 @@ void chip8::zeroInstruction() {
 
 // Decodes/exectutes instructions that have an 0x8 most significant byte
 void chip8::eightInstruction() {
-	int X = (opcode & 0x0F00) >> 8;
-	int Y = (opcode & 0x00F0) >> 4;
-	int F = 0xF;
-
+	unsigned short X = (opcode & 0x0F00) >> 8;
+	unsigned short Y = (opcode & 0x00F0) >> 4;
+	unsigned short F = 0xF;
+	
 	switch (opcode & 0x000F) {
 	case(0x0000):
 		registers[X] = registers[Y];
+		pc += 2;
 		break;
 	case(0x0001):
-		registers[X] = registers[X] | registers[Y];
+		registers[X] |= registers[X];
+		pc += 2;
 		break;
 	case(0x0002):
-		registers[X] = registers[X] & registers[Y];
+		registers[X] &= registers[Y];
+		pc += 2;
 		break;
 	case(0x0003):
-		registers[X] = registers[X] ^ registers[Y];
+		registers[X] ^= registers[Y];
+		pc += 2;
 		break;
 	case(0x0004):
-		registers[F] = ((int)registers[X] + (int)registers[Y]) > 0xFFFF;
+		if ((int)registers[X] + (int)registers[Y] < 256) {
+			registers[F] = 0;
+		}
+		else {
+			registers[F] = 1;
+		}
 		registers[X] += registers[Y];
+		pc += 2;
 		break;
 	case(0x0005):
-		registers[F] = registers[X] > registers[Y];
+		if (int(registers[X]) - (int)registers[Y] >= 0) {
+			registers[F] = 1;
+		}
+		else {
+			registers[F] = 0;
+		}
 		registers[X] -= registers[Y];
+		pc += 2;
 		break;
 	case(0x0006):
 		registers[F] = registers[X] & 0x1;
 		registers[X] >>= 1;
+		pc += 2;
 		break;
 	case(0x0007):
-		registers[F] = registers[Y] > registers[X];
+		if ((int)registers[Y] - int(registers[X]) >= 0) {
+			registers[F] = 1;
+		}
+		else {
+			registers[F] = 0;
+		}
 		registers[X] = registers[Y] - registers[X];
+		pc += 2;
 		break;
 	case(0x000E):
 		registers[F] = (registers[X] & 0x80) >> 7;
 		registers[X] <<= 1;
+		pc += 2;
 		break;
 	default:
 		invalidInstruction();
 		break;
 	}
-	pc += 2;
+	
 }
 
 // Decodes/exectutes instructions that have an 0xE most significant byte
 void chip8::eInstruction() {
-	int X = (opcode & 0x0F00) >> 8;
+	unsigned short X = (opcode & 0x0F00) >> 8;
 
 	switch (opcode & 0x00FF) {
 	case(0x009E):
-		pc += (key[registers[X]] ? 4 : 2);
+		if (key[registers[X]] != 0) {
+			pc += 4;
+		}
+		else {
+			pc += 2;
+		}
 		break;
 	case(0x00A1):
-		pc += (key[registers[X]] ? 2 : 4);
+		if (key[registers[X]] == 0) {
+			pc += 4;
+		}
+		else {
+			pc += 2;
+		}
 		break;
 	default:
 		invalidInstruction();
@@ -283,18 +342,20 @@ void chip8::eInstruction() {
 
 // Decodes/exectutes instructions that have an 0xF most significant byte
 void chip8::fInstruction() {
-	int X = (opcode & 0x0F00) >> 8;
+	unsigned short X = (opcode & 0x0F00) >> 8;
+	unsigned short F = 0xF;
 
 	switch (opcode & 0x00FF) {
 	case(0x0007):
 		registers[X] = delayTimer;
+		pc += 2;
 		break;
 	case(0x000A):
 	{
 		bool keyPress = false;
 		
 		for (int i = 0; i < 16; i++) {
-			if (key[i]) {
+			if (key[i] != 0) {
 				registers[X] = i;
 				keyPress = true;
 			}
@@ -302,40 +363,50 @@ void chip8::fInstruction() {
 		if (!keyPress) {
 			return;
 		}
+		pc += 2;
 		break;
 	}
 	case(0x0015):
 		delayTimer = registers[X];
+		pc += 2;
 		break;
 	case(0x0018):
 		soundTimer = registers[X];
+		pc += 2;
 		break;
 	case(0x001E):
+		registers[F] = (I + registers[X] > 0xFFF);
 		I += registers[X];
+		pc += 2;
 		break;
 	case(0x0029):
 		I = registers[X] * 0x5;
+		pc += 2;
 		break;
 	case(0x0033):
 		memory[I] =      registers[X] / 100;
 		memory[I + 1] = (registers[X] / 10) % 10;
 		memory[I + 2] = (registers[X] % 100) % 10;
+		pc += 2;
 		break;
 	case(0x0055):
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i <= X; i++) {
 			memory[I + i] = registers[i];
 		}
+		I += X + 1;
+		pc += 2;
 		break;
 	case(0x0065):
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i <= X; i++) {
 			registers[i] = memory[I + i];
 		}
+		I += X + 1;
+		pc += 2;
 		break;
 	default:
 		invalidInstruction();
 		break;
 	}
-	pc += 2;
 }
 
 void chip8::invalidInstruction() {
