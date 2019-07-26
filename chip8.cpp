@@ -2,6 +2,7 @@
 
 #include <GLFW\glfw3.h>
 #include <iostream>
+#include <time.h>
 
 
 chip8::chip8() {
@@ -41,8 +42,11 @@ void chip8::initialise() {
 	delayTimer = 0;
 	soundTimer = 0;
 
+	// Set seed
+	srand(time(NULL));
+
 	// Load binary
-	loadGame("C:/Users/user/Documents/Projects/CHIP8-Emulator/roms/Breakout [Carmelo Cortez, 1979].ch8");
+	loadGame("C:/Users/user/Documents/Projects/CHIP8-Emulator/roms/TETRIS.ch8");
 }
 
 // Clears display by zeroing all values
@@ -79,9 +83,6 @@ void chip8::loadGame(std::string game) {
 void chip8::setKeys(GLFWwindow* window) {
 	for (int i = 0; i < 16; i++) {
 		key[i] = glfwGetKey(window, glfwKeys[i]);
-		if (key[i]) {
-			//std::cout << "HERE";
-		}
 	}
 }
 
@@ -102,6 +103,7 @@ void chip8::render() {
 		}
 	}
 }
+unsigned char prev = 0;
 
 // Executes one emulation cycle, reference: https://en.wikipedia.org/wiki/CHIP-8#Opcode_table
 void chip8::cycle() {
@@ -168,7 +170,7 @@ void chip8::cycle() {
 		}
 		break;
 	case(0xA000):
-		I = opcode & 0x0FFF;
+		I = (opcode & 0x0FFF);
 		pc += 2;
 		break;
 	case(0xB000):
@@ -267,17 +269,17 @@ void chip8::eightInstruction() {
 		pc += 2;
 		break;
 	case(0x0004):
-		if ((int)registers[X] + (int)registers[Y] < 256) {
-			registers[F] = 0;
+		if ((int)registers[X] + (int)registers[Y] > 255) {
+			registers[F] = 1;
 		}
 		else {
-			registers[F] = 1;
+			registers[F] = 0;
 		}
 		registers[X] += registers[Y];
 		pc += 2;
 		break;
 	case(0x0005):
-		if (int(registers[X]) - (int)registers[Y] >= 0) {
+		if (registers[X] >= registers[Y]) {
 			registers[F] = 1;
 		}
 		else {
@@ -292,7 +294,7 @@ void chip8::eightInstruction() {
 		pc += 2;
 		break;
 	case(0x0007):
-		if ((int)registers[Y] - int(registers[X]) >= 0) {
+		if (registers[Y] >= registers[X]) {
 			registers[F] = 1;
 		}
 		else {
@@ -339,11 +341,11 @@ void chip8::eInstruction() {
 		break;
 	}
 }
-
 // Decodes/exectutes instructions that have an 0xF most significant byte
 void chip8::fInstruction() {
 	unsigned short X = (opcode & 0x0F00) >> 8;
 	unsigned short F = 0xF;
+	
 
 	switch (opcode & 0x00FF) {
 	case(0x0007):
@@ -358,6 +360,7 @@ void chip8::fInstruction() {
 			if (key[i] != 0) {
 				registers[X] = i;
 				keyPress = true;
+				break;
 			}
 		}
 		if (!keyPress) {
@@ -375,7 +378,12 @@ void chip8::fInstruction() {
 		pc += 2;
 		break;
 	case(0x001E):
-		registers[F] = (I + registers[X] > 0xFFF);
+		if ((I + registers[X]) > 0xFFF) {
+			registers[F] = 1;
+		}
+		else {
+			registers[F] = 0;
+		}
 		I += registers[X];
 		pc += 2;
 		break;
@@ -385,8 +393,8 @@ void chip8::fInstruction() {
 		break;
 	case(0x0033):
 		memory[I] =      registers[X] / 100;
-		memory[I + 1] = (registers[X] / 10) % 10;
-		memory[I + 2] = (registers[X] % 100) % 10;
+		memory[I + 1] = (registers[X] % 100) / 10;
+		memory[I + 2] = (registers[X] % 10);
 		pc += 2;
 		break;
 	case(0x0055):
