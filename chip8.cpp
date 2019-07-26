@@ -46,7 +46,7 @@ void chip8::initialise() {
 	srand(time(NULL));
 
 	// Load binary
-	loadGame("C:/Users/user/Documents/Projects/CHIP8-Emulator/roms/TETRIS.ch8");
+	loadGame("C:/Users/user/Documents/Projects/CHIP8-Emulator/roms/Breakout (Brix hack) [David Winter, 1997].ch8");
 }
 
 // Clears display by zeroing all values
